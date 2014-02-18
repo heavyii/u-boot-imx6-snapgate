@@ -93,11 +93,12 @@
 #define CONFIG_FEC_MXC
 #define CONFIG_MII
 #define IMX_FEC_BASE			ENET_BASE_ADDR
-#define CONFIG_FEC_XCV_TYPE		RGMII
+#define CONFIG_FEC_XCV_TYPE		RMII
 #define CONFIG_ETHPRIME			"FEC"
-#define CONFIG_FEC_MXC_PHYADDR		1
+#define CONFIG_FEC_MXC_PHYADDR		0
+
 #define CONFIG_PHYLIB
-#define CONFIG_PHY_ATHEROS
+#define CONFIG_PHY_SMSC
 
 /* Framebuffer */
 #define CONFIG_VIDEO
@@ -132,7 +133,11 @@
 	"splashimage_mmc_init_block=0x410\0"			\
 	"splashimage_mmc_blkcnt=0x3F0\0"			\
 	"splashimage_file_name=boot/out.bmp.gz\0"		\
-        "splashpos=m,m\0"
+	"splashpos=m,m\0"	\
+	"ethaddr=02:24:08:32:68:08\0" \
+	"ipaddr=192.168.14.100\0" \
+	"netmask=255.255.255.0\0" \
+	"serverip=192.168.14.90\0"
 
 #define CONFIG_BOOTCOMMAND \
 		   "run bootcmd;"
@@ -140,7 +145,7 @@
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_SYS_HUSH_PARSER
-#define CONFIG_SYS_PROMPT	       "=> "
+#define CONFIG_SYS_PROMPT	       "DLRC# "
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_CBSIZE		256
 
