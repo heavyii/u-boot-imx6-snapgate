@@ -43,12 +43,14 @@
 #define CONFIG_BAUDRATE			115200
 
 /* Command definition */
+#define CONFIG_SYS_NO_FLASH
 #include <config_cmd_default.h>
 
 #undef CONFIG_CMD_IMLS
 
 #define CONFIG_CMD_BMODE
 #define CONFIG_CMD_SETEXPR
+
 
 #define CONFIG_BOOTDELAY		3
 
@@ -127,17 +129,18 @@
 #endif
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"bootargs=console=ttymxc0,115200 root=/dev/mmcblk0p1 rootwait rw\0" \
+	"bootargs=console=ttymxc0,115200 root=/dev/mmcblk0p1 rootwait rw arm_freq=1000 ${video_settings}\0" \
 	"bootcmd=mmc dev " __stringify(CONFIG_SYS_MMC_ENV_DEV) "; mmc read ${loadaddr} 0x800 0x1a00;bootm\0" \
 	"splashimage=0x10800000\0"				\
-	"splashimage_mmc_init_block=0x410\0"			\
+	"splashimage_mmc_init_block=0x400\0"			\
 	"splashimage_mmc_blkcnt=0x3F0\0"			\
 	"splashimage_file_name=boot/out.bmp.gz\0"		\
 	"splashpos=m,m\0"	\
 	"ethaddr=02:24:08:32:68:08\0" \
 	"ipaddr=192.168.14.100\0" \
 	"netmask=255.255.255.0\0" \
-	"serverip=192.168.14.90\0"
+	"serverip=192.168.14.90\0" \
+	"video_settings=video=mxcfb0:dev=hdmi,1280x720M@60,if=RGB24,bpp=32 video=mxcfb2:off fbmem=128M gpumem=128M voutmem=128M vmalloc=200M\0"
 
 #define CONFIG_BOOTCOMMAND \
 		   "run bootcmd;"
@@ -145,7 +148,7 @@
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_SYS_HUSH_PARSER
-#define CONFIG_SYS_PROMPT	       "DLRC# "
+#define CONFIG_SYS_PROMPT	       "DLRC#"
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_CBSIZE		256
 
@@ -172,9 +175,28 @@
 #define CONFIG_SYS_INIT_SP_ADDR \
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
-/* FLASH and environment organization */
-#define CONFIG_SYS_NO_FLASH
 
+/* SPI FLASH */
+
+#define CONFIG_CMD_SF
+#ifdef CONFIG_CMD_SF
+#define CONFIG_CMD_SPI
+#define CONFIG_MXC_SPI
+#define CONFIG_SPI_FLASH
+#define CONFIG_SPI_FLASH_STMICRO
+
+#define CONFIG_SF_DEFAULT_BUS  1
+#define CONFIG_SF_DEFAULT_CS   (IMX_GPIO_NR(3, 25)<<8)
+#define CONFIG_SF_DEFAULT_SPEED 20000000
+#define CONFIG_SF_DEFAULT_MODE (SPI_MODE_0)
+
+#define CONFIG_ENV_SPI_BUS		1
+#define CONFIG_ENV_SPI_CS		(IMX_GPIO_NR(3, 25)<<8)
+#define CONFIG_ENV_SPI_MAX_HZ	20000000
+#define CONFIG_ENV_SPI_MODE		SPI_MODE_0
+#endif
+
+/* environment  */
 #define CONFIG_ENV_SIZE			(8 * 1024)
 
 #define CONFIG_ENV_IS_IN_MMC
@@ -187,5 +209,7 @@
 #ifndef CONFIG_SYS_DCACHE_OFF
 #define CONFIG_CMD_CACHE
 #endif
+
+
 
 #endif			       /* __CONFIG_H * */

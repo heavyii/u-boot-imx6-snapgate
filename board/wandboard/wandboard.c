@@ -39,6 +39,9 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
 
+#define SPI_PAD_CTRL (PAD_CTL_HYS | PAD_CTL_SPEED_MED |		\
+	PAD_CTL_DSE_40ohm     | PAD_CTL_SRE_FAST)
+
 #define USDHC_PAD_CTRL (PAD_CTL_PUS_47K_UP |			\
 	PAD_CTL_SPEED_LOW | PAD_CTL_DSE_80ohm |			\
 	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
@@ -64,7 +67,7 @@ int dram_init(void)
 			
 	switch (imxtype){
 	case MXC_CPU_MX6SOLO:
-		sdram_size = 512 * 1024 * 1024;
+		sdram_size = 1u * 1024 * 1024 * 1024;
 		break;
 	case MXC_CPU_MX6Q:
 		sdram_size = 2u * 1024 * 1024 * 1024;
@@ -120,6 +123,13 @@ MUX_PAD_CTRL(ENET_PAD_CTRL),
     MX6_PAD_ENET_RXD1__ENET_RDATA_1        | MUX_PAD_CTRL(ENET_PAD_CTRL),
     MX6_PAD_ENET_TXD0__ENET_TDATA_0        | MUX_PAD_CTRL(ENET_PAD_CTRL),
     MX6_PAD_ENET_TXD1__ENET_TDATA_1        | MUX_PAD_CTRL(ENET_PAD_CTRL)
+};
+
+static iomux_v3_cfg_t const ecspi2_pads[] = {
+	MX6_PAD_EIM_CS0__ECSPI2_SCLK   | MUX_PAD_CTRL(SPI_PAD_CTRL),
+	MX6_PAD_EIM_CS1__ECSPI2_MOSI | MUX_PAD_CTRL(SPI_PAD_CTRL),
+	MX6_PAD_EIM_OE__ECSPI2_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL),
+	MX6_PAD_EIM_D25__GPIO_3_25 | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 #endif
 
@@ -277,10 +287,6 @@ static void setup_display(void)
 #endif /* CONFIG_VIDEO_IPUV3 */
 
 #ifdef CONFIG_SPLASH_SCREEN
-
-extern block_dev_desc_t sata_dev_desc[CONFIG_SYS_SATA_MAX_DEVICE];
-
-extern int sata_curr_device;
 
 int splash_screen_prepare(void)
 {
@@ -444,28 +450,31 @@ int overwrite_console(void)
 
 int setup_sata(void)
 {
-	struct iomuxc_base_regs *const iomuxc_regs
-		= (struct iomuxc_base_regs *) IOMUXC_BASE_ADDR;
-	int ret = enable_sata_clock();
-	if (ret)
-		return ret;
 
-	clrsetbits_le32(&iomuxc_regs->gpr[13],
-			IOMUXC_GPR13_SATA_MASK,
-			IOMUXC_GPR13_SATA_PHY_8_RXEQ_3P0DB
-			|IOMUXC_GPR13_SATA_PHY_7_SATA2M
-			|IOMUXC_GPR13_SATA_SPEED_3G
-			|(3<<IOMUXC_GPR13_SATA_PHY_6_SHIFT)
-			|IOMUXC_GPR13_SATA_SATA_PHY_5_SS_DISABLED
-			|IOMUXC_GPR13_SATA_SATA_PHY_4_ATTEN_9_16
-			|IOMUXC_GPR13_SATA_PHY_3_TXBOOST_0P00_DB
-			|IOMUXC_GPR13_SATA_PHY_2_TX_1P104V
-			|IOMUXC_GPR13_SATA_PHY_1_SLOW);
-
-	return 0;
 }
 #endif
 
+#ifdef CONFIG_MXC_SPI
+
+static void setup_iomux_spi(void)
+{
+#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
+	imx_iomux_v3_setup_multiple_pads(ecspi2_pads, ARRAY_SIZE(ecspi2_pads));
+#endif
+#if defined(CONFIG_MX6QDL)
+	MX6QDL_SET_PAD(PAD_EIM_CS0__ECSPI2_SCLK, MUX_PAD_CTRL(SPI_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_EIM_CS1__ECSPI2_MOSI, MUX_PAD_CTRL(SPI_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_EIM_OE__ECSPI2_MISO, MUX_PAD_CTRL(SPI_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_EIM_D25__ECSPI2_SS3, MUX_PAD_CTRL(SPI_PAD_CTRL));
+	MX6QDL_SET_PAD(PAD_EIM_D25__GPIO_3_25, MUX_PAD_CTRL(SPI_PAD_CTRL));
+#endif
+}
+
+static void setup_spi(void)
+{
+	setup_iomux_spi();
+}
+#endif
 
 #ifdef CONFIG_CMD_BMODE
 static const struct boot_mode board_boot_modes[] = {
@@ -489,6 +498,10 @@ int board_init(void)
 {
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
+
+#ifdef CONFIG_MXC_SPI
+	setup_spi();
+#endif
 
 #ifdef	CONFIG_FEC_MXC
 	setup_fec();
