@@ -128,22 +128,55 @@
 #define CONFIG_DEFAULT_FDT_FILE		"imx6q-wandboard.dtb"
 #endif
 
+#define CONFIG_BOOTCOMMAND \
+	"mmc dev ${mmcdev};" \
+	"if mmc rescan; then " \
+	"if run loadbootenv; then " \
+		"echo Loaded environment from ${bootenv};" \
+		"run importbootenv;" \
+	"fi;" \
+	"if test -n $uenvcmd; then " \
+		"echo Running uenvcmd ...;" \
+		"run uenvcmd;" \
+	"fi;" \
+	"if run loadramdisk; then " \
+		"setenv rootdevice ${ramdisk_dev}; " \
+		"setenv bootsys \'bootm ${loadaddr} ${initrdaddr}\'; " \
+	"fi;" \
+	"if run loaduimage; then " \
+		"run setbootargs; " \
+		"run bootsys ; " \
+	"fi;" \
+	"fi;"
+
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"bootargs=console=ttymxc0,115200 root=/dev/mmcblk0p1 rootwait rw arm_freq=1000 ${video_settings}\0" \
-	"bootcmd=mmc dev " __stringify(CONFIG_SYS_MMC_ENV_DEV) "; mmc read ${loadaddr} 0x800 0x1a00;bootm\0" \
+	"bootargs_base=console=ttymxc0,115200\0" \
+	"setbootargs=run setbase; run setvideo; run setopts; run setplatform\0" \
+	"setbase=setenv bootargs ${bootargs_base} ${rootdevice}\0" \
+	"setvideo=setenv bootargs ${bootargs} ${video_mode}\0" \
+	"setplatform=if test -n $expansion; then setenv bootargs " \
+		"$bootargs expansion=$expansion;fi;if test -n $baseboard;" \
+		" then setenv bootargs $bootargs baseboard=$baseboard;fi\0" \
+	"setopts=setenv bootargs ${bootargs} ${optargs}\0" \
+	"setvideo=setenv bootargs ${bootargs} ${video_mode}\0" \
+	"bootsys=bootm ${loadaddr}\0 " \
+	"initrdaddr=0x13000000\0" \
+	"rootdevice=root=/dev/mmcblk0p2 rootwait ro rootfstype=ext4\0" \
+	"mmcdev=0\0" \
+	"bootenv=boot/uEnv.txt\0" \
+	"bootcmd="CONFIG_BOOTCOMMAND"\0" \
+	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
+	"importbootenv=echo Importing environment...; " \
+		"env import -t $loadaddr $filesize\0" \
+	"loaduimage=fatload mmc ${mmcdev} ${loadaddr} boot/uImage\0" \
+	"loaduimage_raw=mmc read ${loadaddr} 0x800 0x4000\0 "	\
+	"loadramdisk=fatload mmc ${mmcdev} ${initrdaddr} boot/uramdisk.img\0" \
 	"splashimage=0x10800000\0"				\
-	"splashimage_mmc_init_block=0x400\0"			\
+	"splashimage_mmc_init_block=0x410\0"			\
 	"splashimage_mmc_blkcnt=0x3F0\0"			\
 	"splashimage_file_name=boot/out.bmp.gz\0"		\
-	"splashpos=m,m\0"	\
-	"ethaddr=02:24:08:32:68:08\0" \
-	"ipaddr=192.168.14.100\0" \
-	"netmask=255.255.255.0\0" \
-	"serverip=192.168.14.90\0" \
-	"video_settings=video=mxcfb0:dev=hdmi,1280x720M@60,if=RGB24,bpp=32 video=mxcfb2:off fbmem=128M gpumem=128M voutmem=128M vmalloc=200M\0"
+        "splashpos=m,m\0"
 
-#define CONFIG_BOOTCOMMAND \
-		   "run bootcmd;"
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP

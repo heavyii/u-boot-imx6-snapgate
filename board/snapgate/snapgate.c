@@ -53,7 +53,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC1_CD_GPIO		IMX_GPIO_NR(1, 2)
 #define USDHC3_CD_GPIO		IMX_GPIO_NR(3, 9)
 
-
 int dram_init(void)
 {
 #if defined(CONFIG_DDR_MB)
