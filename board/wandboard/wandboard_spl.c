@@ -71,7 +71,6 @@ enum boot_device get_boot_device(void) {
 #include "asm/arch/mx6_ddr_regs.h"
 
 static void spl_dram_init_mx6solo_512mb(void);
-static void spl_dram_init_mx6solo_1g(void);
 static void spl_dram_init_mx6dl_1g(void);
 static void spl_dram_init_mx6q_2g(void);
 static void spl_dram_init(void);
@@ -136,44 +135,44 @@ static void spl_mx6dl_dram_setup_iomux(void)
 
 	mx6dl_grp_iomux->grp_ddr_type = (u32)0x000c0000;
 	mx6dl_grp_iomux->grp_ddrpke = (u32)0x00000000;
-	mx6dl_ddr_iomux->dram_sdclk_0 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_sdclk_1 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_cas = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_ras = (u32)0x00000028;
-	mx6dl_grp_iomux->grp_addds = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_reset = (u32)0x00000028;
+	mx6dl_ddr_iomux->dram_sdclk_0 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_sdclk_1 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_cas = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_ras = (u32)0x00000030;
+	mx6dl_grp_iomux->grp_addds = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_reset = (u32)0x000c0030;
 	mx6dl_ddr_iomux->dram_sdcke0 = (u32)0x00003000;
 	mx6dl_ddr_iomux->dram_sdcke1 = (u32)0x00003000;
 	mx6dl_ddr_iomux->dram_sdba2 = (u32)0x00000000;
-	mx6dl_ddr_iomux->dram_sdodt0 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_sdodt1 = (u32)0x00000028;
+	mx6dl_ddr_iomux->dram_sdodt0 = (u32)0x00003030;
+	mx6dl_ddr_iomux->dram_sdodt1 = (u32)0x00003030;
 	mx6dl_grp_iomux->grp_ctlds = (u32)0x00000030;
 	mx6dl_grp_iomux->grp_ddrmode_ctl = (u32)0x00020000;
-	mx6dl_ddr_iomux->dram_sdqs0 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_sdqs1 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_sdqs2 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_sdqs3 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_sdqs4 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_sdqs5 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_sdqs6 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_sdqs7 = (u32)0x00000028;
+	mx6dl_ddr_iomux->dram_sdqs0 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_sdqs1 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_sdqs2 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_sdqs3 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_sdqs4 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_sdqs5 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_sdqs6 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_sdqs7 = (u32)0x00000030;
 	mx6dl_grp_iomux->grp_ddrmode = (u32)0x00020000;
-	mx6dl_grp_iomux->grp_b0ds = (u32)0x00000028;
-	mx6dl_grp_iomux->grp_b1ds = (u32)0x00000028;
-	mx6dl_grp_iomux->grp_b2ds = (u32)0x00000028;
-	mx6dl_grp_iomux->grp_b3ds = (u32)0x00000028;
-	mx6dl_grp_iomux->grp_b4ds = (u32)0x00000028;
-	mx6dl_grp_iomux->grp_b5ds = (u32)0x00000028;
-	mx6dl_grp_iomux->grp_b6ds = (u32)0x00000028;
-	mx6dl_grp_iomux->grp_b7ds = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_dqm0 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_dqm1 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_dqm2 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_dqm3 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_dqm4 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_dqm5 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_dqm6 = (u32)0x00000028;
-	mx6dl_ddr_iomux->dram_dqm7 = (u32)0x00000028;
+	mx6dl_grp_iomux->grp_b0ds = (u32)0x00000030;
+	mx6dl_grp_iomux->grp_b1ds = (u32)0x00000030;
+	mx6dl_grp_iomux->grp_b2ds = (u32)0x00000030;
+	mx6dl_grp_iomux->grp_b3ds = (u32)0x00000030;
+	mx6dl_grp_iomux->grp_b4ds = (u32)0x00000030;
+	mx6dl_grp_iomux->grp_b5ds = (u32)0x00000030;
+	mx6dl_grp_iomux->grp_b6ds = (u32)0x00000030;
+	mx6dl_grp_iomux->grp_b7ds = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_dqm0 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_dqm1 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_dqm2 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_dqm3 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_dqm4 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_dqm5 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_dqm6 = (u32)0x00000030;
+	mx6dl_ddr_iomux->dram_dqm7 = (u32)0x00000030;
 }
 
 static void spl_dram_init_mx6solo_512mb(void)
@@ -184,16 +183,16 @@ static void spl_dram_init_mx6solo_512mb(void)
 	mmdc_p1 = (struct mmdc_p_regs *) MMDC_P1_BASE_ADDR;
 
 	/* ZQ */
-	mmdc_p0->mpzqhwctrl = (u32)0xA1390003;
-	mmdc_p1->mpzqhwctrl = (u32)0xA1390003;
+	mmdc_p0->mpzqhwctrl = (u32)0xa1390003;
+	mmdc_p1->mpzqhwctrl = (u32)0xa1390003;
 	/* Write leveling */
 	mmdc_p0->mpwldectrl0 = (u32)0x0040003c;
 	mmdc_p0->mpwldectrl1 = (u32)0x0032003e;
 
-	mmdc_p0->mpdgctrl0 = (u32)0x02400244;
-	mmdc_p0->mpdgctrl1 = (u32)0x022c0230;
-	mmdc_p0->mprddlctl = (u32)0x44464A46;
-	mmdc_p0->mpwrdlctl = (u32)0x34362E32;
+	mmdc_p0->mpdgctrl0 = (u32)0x42350231;
+	mmdc_p0->mpdgctrl1 = (u32)0x021a0218;
+	mmdc_p0->mprddlctl = (u32)0x4b4b4e49;
+	mmdc_p0->mpwrdlctl = (u32)0x3f3f3035;
 	/* Read data bit delay */
 	mmdc_p0->mprddqby0dl = (u32)0x33333333;
 	mmdc_p0->mprddqby1dl = (u32)0x33333333;
@@ -206,78 +205,25 @@ static void spl_dram_init_mx6solo_512mb(void)
 	/* Complete calibration by forced measurement */
 	mmdc_p0->mpmur0 = (u32)0x00000800;
 	mmdc_p0->mdpdc = (u32)0x0002002d;
-	mmdc_p0->mdotc = (u32)0x00333040;
-	mmdc_p0->mdcfg0 = (u32)0x3F4352F3;
-	mmdc_p0->mdcfg1 = (u32)0xB66D8B63;
-	mmdc_p0->mdcfg2 = (u32)0x01FF00DB;
-	mmdc_p0->mdmisc = (u32)0x00011740;
+	mmdc_p0->mdotc = (u32)0x00333030;
+	mmdc_p0->mdcfg0 = (u32)0x696d5323;
+	mmdc_p0->mdcfg1 = (u32)0xb66e8c63;
+	mmdc_p0->mdcfg2 = (u32)0x01ff00db;
+	mmdc_p0->mdmisc = (u32)0x00081740;
 	mmdc_p0->mdscr = (u32)0x00008000;
 	mmdc_p0->mdrwd = (u32)0x000026d2;
-	mmdc_p0->mdor = (u32)0x00431023;
-	mmdc_p0->mdasp = (u32)0x00000017;
-	mmdc_p0->mdctl = (u32)0x83190000;
-	mmdc_p0->mdscr = (u32)0x02008032;
-	mmdc_p0->mdscr = (u32)0x00008033;
-	mmdc_p0->mdscr = (u32)0x00048031;
-	mmdc_p0->mdscr = (u32)0x05208030;
-	mmdc_p0->mdscr = (u32)0x04008040;
-	mmdc_p0->mdref = (u32)0x00007800;
-	mmdc_p0->mpodtctrl = (u32)0x00022227;
-	mmdc_p1->mpodtctrl = (u32)0x00022227;
-	mmdc_p0->mdpdc = (u32)0x0002556D;
-	mmdc_p1->mdpdc = (u32)0x00011006;
-	mmdc_p0->mdscr = (u32)0x00000000;
-}
-
-static void spl_dram_init_mx6solo_1g(void)
-{
-	volatile struct mmdc_p_regs *mmdc_p0;
-	volatile struct mmdc_p_regs *mmdc_p1;
-	mmdc_p0 = (struct mmdc_p_regs *) MMDC_P0_BASE_ADDR;
-	mmdc_p1 = (struct mmdc_p_regs *) MMDC_P1_BASE_ADDR;
-
-	/* ZQ */
-	mmdc_p0->mpzqhwctrl = (u32)0xA1390003;
-	mmdc_p1->mpzqhwctrl = (u32)0xA1390003;
-	/* Write leveling */
-	mmdc_p0->mpwldectrl0 = (u32)0x0040003c;
-	mmdc_p0->mpwldectrl1 = (u32)0x0032003e;
-
-	mmdc_p0->mpdgctrl0 = (u32)0x02400244;
-	mmdc_p0->mpdgctrl1 = (u32)0x022c0230;
-	mmdc_p0->mprddlctl = (u32)0x44464A46;
-	mmdc_p0->mpwrdlctl = (u32)0x34362E32;
-	/* Read data bit delay */
-	mmdc_p0->mprddqby0dl = (u32)0x33333333;
-	mmdc_p0->mprddqby1dl = (u32)0x33333333;
-	mmdc_p0->mprddqby2dl = (u32)0x33333333;
-	mmdc_p0->mprddqby3dl = (u32)0x33333333;
-	mmdc_p1->mprddqby0dl = (u32)0x33333333;
-	mmdc_p1->mprddqby1dl = (u32)0x33333333;
-	mmdc_p1->mprddqby2dl = (u32)0x33333333;
-	mmdc_p1->mprddqby3dl = (u32)0x33333333;
-	/* Complete calibration by forced measurement */
-	mmdc_p0->mpmur0 = (u32)0x00000800;
-	mmdc_p0->mdpdc = (u32)0x0002002d;
-	mmdc_p0->mdotc = (u32)0x00333040;
-	mmdc_p0->mdcfg0 = (u32)0x676B52F3;
-	mmdc_p0->mdcfg1 = (u32)0xB66D8B63;
-	mmdc_p0->mdcfg2 = (u32)0x01FF00DB;
-	mmdc_p0->mdmisc = (u32)0x00011740;
-	mmdc_p0->mdscr = (u32)0x00008000;
-	mmdc_p0->mdrwd = (u32)0x000026d2;
-	mmdc_p0->mdor = (u32)0x006B1023;
+	mmdc_p0->mdor = (u32)0x006d0e21;
 	mmdc_p0->mdasp = (u32)0x00000027;
 	mmdc_p0->mdctl = (u32)0x84190000;
-	mmdc_p0->mdscr = (u32)0x02008032;
+	mmdc_p0->mdscr = (u32)0x04008032;
 	mmdc_p0->mdscr = (u32)0x00008033;
 	mmdc_p0->mdscr = (u32)0x00048031;
-	mmdc_p0->mdscr = (u32)0x05208030;
+	mmdc_p0->mdscr = (u32)0x07208030;
 	mmdc_p0->mdscr = (u32)0x04008040;
-	mmdc_p0->mdref = (u32)0x00007800;
-	mmdc_p0->mpodtctrl = (u32)0x00022227;
-	mmdc_p1->mpodtctrl = (u32)0x00022227;
-	mmdc_p0->mdpdc = (u32)0x0002556D;
+	mmdc_p0->mdref = (u32)0x00005800;
+	mmdc_p0->mpodtctrl = (u32)0x00011117;
+	mmdc_p1->mpodtctrl = (u32)0x00011117;
+	mmdc_p0->mdpdc = (u32)0x0002556d;
 	mmdc_p1->mdpdc = (u32)0x00011006;
 	mmdc_p0->mdscr = (u32)0x00000000;
 }
@@ -452,7 +398,7 @@ static void spl_dram_init(void)
 	switch (imxtype){
 	case MXC_CPU_MX6SOLO:
 		spl_mx6dl_dram_setup_iomux();
-		spl_dram_init_mx6solo_1g();
+		spl_dram_init_mx6solo_512mb();
 		break;
 	case MXC_CPU_MX6Q:
 		spl_mx6q_dram_setup_iomux();

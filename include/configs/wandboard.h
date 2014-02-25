@@ -43,14 +43,12 @@
 #define CONFIG_BAUDRATE			115200
 
 /* Command definition */
-#define CONFIG_SYS_NO_FLASH
 #include <config_cmd_default.h>
 
 #undef CONFIG_CMD_IMLS
 
 #define CONFIG_CMD_BMODE
 #define CONFIG_CMD_SETEXPR
-
 
 #define CONFIG_BOOTDELAY		3
 
@@ -95,12 +93,11 @@
 #define CONFIG_FEC_MXC
 #define CONFIG_MII
 #define IMX_FEC_BASE			ENET_BASE_ADDR
-#define CONFIG_FEC_XCV_TYPE		RMII
+#define CONFIG_FEC_XCV_TYPE		RGMII
 #define CONFIG_ETHPRIME			"FEC"
-#define CONFIG_FEC_MXC_PHYADDR		0
-
+#define CONFIG_FEC_MXC_PHYADDR		1
 #define CONFIG_PHYLIB
-#define CONFIG_PHY_SMSC
+#define CONFIG_PHY_ATHEROS
 
 /* Framebuffer */
 #define CONFIG_VIDEO
@@ -128,60 +125,22 @@
 #define CONFIG_DEFAULT_FDT_FILE		"imx6q-wandboard.dtb"
 #endif
 
-#define CONFIG_BOOTCOMMAND \
-	"mmc dev ${mmcdev};" \
-	"if mmc rescan; then " \
-	"if run loadbootenv; then " \
-		"echo Loaded environment from ${bootenv};" \
-		"run importbootenv;" \
-	"fi;" \
-	"if test -n $uenvcmd; then " \
-		"echo Running uenvcmd ...;" \
-		"run uenvcmd;" \
-	"fi;" \
-	"if run loadramdisk; then " \
-		"setenv rootdevice ${ramdisk_dev}; " \
-		"setenv bootsys \'bootm ${loadaddr} ${initrdaddr}\'; " \
-	"fi;" \
-	"if run loaduimage; then " \
-		"run setbootargs; " \
-		"run bootsys ; " \
-	"fi;" \
-	"fi;"
-
 #define CONFIG_EXTRA_ENV_SETTINGS \
-	"bootargs_base=console=ttymxc0,115200\0" \
-	"setbootargs=run setbase; run setvideo; run setopts; run setplatform\0" \
-	"setbase=setenv bootargs ${bootargs_base} ${rootdevice}\0" \
-	"setvideo=setenv bootargs ${bootargs} ${video_mode}\0" \
-	"setplatform=if test -n $expansion; then setenv bootargs " \
-		"$bootargs expansion=$expansion;fi;if test -n $baseboard;" \
-		" then setenv bootargs $bootargs baseboard=$baseboard;fi\0" \
-	"setopts=setenv bootargs ${bootargs} ${optargs}\0" \
-	"setvideo=setenv bootargs ${bootargs} ${video_mode}\0" \
-	"bootsys=bootm ${loadaddr}\0 " \
-	"initrdaddr=0x13000000\0" \
-	"rootdevice=root=/dev/mmcblk0p2 rootwait ro rootfstype=ext4\0" \
-	"mmcdev=0\0" \
-	"bootenv=boot/uEnv.txt\0" \
-	"bootcmd="CONFIG_BOOTCOMMAND"\0" \
-	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
-	"importbootenv=echo Importing environment...; " \
-		"env import -t $loadaddr $filesize\0" \
-	"loaduimage=fatload mmc ${mmcdev} ${loadaddr} boot/uImage\0" \
-	"loaduimage_raw=mmc read ${loadaddr} 0x800 0x4000\0 "	\
-	"loadramdisk=fatload mmc ${mmcdev} ${initrdaddr} boot/uramdisk.img\0" \
+	"bootargs=console=ttymxc0,115200 root=/dev/mmcblk0p1 rootwait rw\0" \
+	"bootcmd=mmc dev " __stringify(CONFIG_SYS_MMC_ENV_DEV) "; mmc read ${loadaddr} 0x800 0x1a00;bootm\0" \
 	"splashimage=0x10800000\0"				\
 	"splashimage_mmc_init_block=0x410\0"			\
 	"splashimage_mmc_blkcnt=0x3F0\0"			\
 	"splashimage_file_name=boot/out.bmp.gz\0"		\
         "splashpos=m,m\0"
 
+#define CONFIG_BOOTCOMMAND \
+		   "run bootcmd;"
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_SYS_HUSH_PARSER
-#define CONFIG_SYS_PROMPT	       "DLRC#"
+#define CONFIG_SYS_PROMPT	       "=> "
 #define CONFIG_AUTO_COMPLETE
 #define CONFIG_SYS_CBSIZE		256
 
@@ -208,28 +167,9 @@
 #define CONFIG_SYS_INIT_SP_ADDR \
 	(CONFIG_SYS_INIT_RAM_ADDR + CONFIG_SYS_INIT_SP_OFFSET)
 
+/* FLASH and environment organization */
+#define CONFIG_SYS_NO_FLASH
 
-/* SPI FLASH */
-
-#define CONFIG_CMD_SF
-#ifdef CONFIG_CMD_SF
-#define CONFIG_CMD_SPI
-#define CONFIG_MXC_SPI
-#define CONFIG_SPI_FLASH
-#define CONFIG_SPI_FLASH_STMICRO
-
-#define CONFIG_SF_DEFAULT_BUS  1
-#define CONFIG_SF_DEFAULT_CS   (IMX_GPIO_NR(3, 25)<<8)
-#define CONFIG_SF_DEFAULT_SPEED 20000000
-#define CONFIG_SF_DEFAULT_MODE (SPI_MODE_0)
-
-#define CONFIG_ENV_SPI_BUS		1
-#define CONFIG_ENV_SPI_CS		(IMX_GPIO_NR(3, 25)<<8)
-#define CONFIG_ENV_SPI_MAX_HZ	20000000
-#define CONFIG_ENV_SPI_MODE		SPI_MODE_0
-#endif
-
-/* environment  */
 #define CONFIG_ENV_SIZE			(8 * 1024)
 
 #define CONFIG_ENV_IS_IN_MMC
@@ -242,7 +182,5 @@
 #ifndef CONFIG_SYS_DCACHE_OFF
 #define CONFIG_CMD_CACHE
 #endif
-
-
 
 #endif			       /* __CONFIG_H * */
