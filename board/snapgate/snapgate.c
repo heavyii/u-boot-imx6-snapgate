@@ -57,8 +57,7 @@ int dram_init(void)
 {
 #if defined(CONFIG_DDR_MB)
 	u32 sdram_size;
-	sdram_size = (u32)CONFIG_DDR_MB * 1024 * 1024;
-	gd->ram_size = get_ram_size((void *)PHYS_SDRAM, gd->ram_size);
+	gd->ram_size = (u32)CONFIG_DDR_MB * 1024 * 1024;
 #else
 	uint cpurev, imxtype;
 	u32 sdram_size;
