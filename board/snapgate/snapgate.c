@@ -53,6 +53,8 @@ DECLARE_GLOBAL_DATA_PTR;
 #define USDHC1_CD_GPIO		IMX_GPIO_NR(1, 2)
 #define USDHC3_CD_GPIO		IMX_GPIO_NR(3, 9)
 
+#define LED_GPIO		IMX_GPIO_NR(7, 13)
+
 int dram_init(void)
 {
 #if defined(CONFIG_DDR_MB)
@@ -468,6 +470,19 @@ static void setup_spi(void)
 }
 #endif
 
+static void setup_led(void)
+{
+	printf("light led\n");
+#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
+	imx_iomux_v3_setup_pad(MX6_PAD_GPIO_18__GPIO_7_13 | MUX_PAD_CTRL(NO_PAD_CTRL));
+#endif
+#if defined(CONFIG_MX6QDL)
+	MX6QDL_SET_PAD(GPIO_18__GPIO_7_13);
+#endif
+	gpio_direction_output(LED_GPIO, 1);
+	gpio_direction_output(LED_GPIO, 0);
+}
+
 #ifdef CONFIG_CMD_BMODE
 static const struct boot_mode board_boot_modes[] = {
 	/* 4 bit bus width */
@@ -490,7 +505,7 @@ int board_init(void)
 {
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
-
+	setup_led();
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
 #endif
