@@ -134,6 +134,12 @@
 	"script=boot.scr\0" \
 	"uimage=uImage\0" \
 	"console=ttymxc0\0" \
+	"ethact=FEC\0" \
+	"ethprime=FEC" \
+	"ethaddr=02:24:08:32:68:08\0" \
+	"ipaddr=192.168.14.100\0" \
+	"netmask=255.255.255.0\0" \
+	"serverip=192.168.14.90\0" \
 	"fdt_high=0xffffffff\0" \
 	"initrd_high=0xffffffff\0" \
 	"fdt_file=imx6s_snapgate.dtb\0" \
