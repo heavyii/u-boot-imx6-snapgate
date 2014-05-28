@@ -19,7 +19,7 @@
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
 
-#define MACH_TYPE_SNAPGATE		4413
+#define MACH_TYPE_SNAPGATE		4412
 #define CONFIG_MACH_TYPE		MACH_TYPE_SNAPGATE
 
 #define CONFIG_CMDLINE_TAG
@@ -56,7 +56,7 @@
 
 #define CONFIG_SYS_MEMTEST_START	0x10000000
 #define CONFIG_SYS_MEMTEST_END		(CONFIG_SYS_MEMTEST_START + 500 * SZ_1M)
-#define CONFIG_LOADADDR			0x12000000
+#define CONFIG_LOADADDR			0x10800000
 #define CONFIG_SYS_TEXT_BASE		0x17800000
 
 /* fuse */
@@ -130,95 +130,65 @@
 #define CONFIG_DEFAULT_FDT_FILE		"imx6q-SNAPGATE.dtb"
 #endif
 
-#define CONFIG_EXTRA_ENV_SETTINGS \
-	"script=boot.scr\0" \
-	"uimage=uImage\0" \
-	"console=ttymxc0\0" \
-	"ethact=FEC\0" \
-	"ethprime=FEC" \
-	"ethaddr=02:24:08:32:68:08\0" \
-	"ipaddr=192.168.14.100\0" \
-	"netmask=255.255.255.0\0" \
-	"serverip=192.168.14.90\0" \
-	"fdt_high=0xffffffff\0" \
-	"initrd_high=0xffffffff\0" \
-	"fdt_file=imx6s_snapgate.dtb\0" \
-	"fdt_addr=0x11000000\0" \
-	"boot_fdt=try\0" \
-	"ip_dyn=yes\0" \
-	"mmcdev=0\0" \
-	"mmcpart=1\0" \
-	"mmcroot=/dev/mmcblk0p2 rootwait rw\0" \
-	"mmcargs=setenv bootargs console=${console},${baudrate} " \
-		"root=${mmcroot}\0" \
-	"loadbootscript=" \
-		"fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${script};\0" \
-	"bootscript=echo Running bootscript from mmc ...; " \
-		"source\0" \
-	"loaduimage=fatload mmc ${mmcdev}:${mmcpart} ${loadaddr} ${uimage}\0" \
-	"loadfdt=fatload mmc ${mmcdev}:${mmcpart} ${fdt_addr} ${fdt_file}\0" \
-	"mmcboot=echo Booting from mmc ...; " \
-		"run mmcargs; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
-			"if run loadfdt; then " \
-				"bootm ${loadaddr} - ${fdt_addr}; " \
-			"else " \
-				"if test ${boot_fdt} = try; then " \
-					"bootm; " \
-				"else " \
-					"echo WARN: Cannot load the DT; " \
-				"fi; " \
-			"fi; " \
-		"else " \
-			"bootm; " \
-		"fi;\0" \
-	"netargs=setenv bootargs console=${console},${baudrate} " \
-		"root=/dev/nfs " \
-	"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
-		"netboot=echo Booting from net ...; " \
-		"run netargs; " \
-		"if test ${ip_dyn} = yes; then " \
-			"setenv get_cmd dhcp; " \
-		"else " \
-			"setenv get_cmd tftp; " \
-		"fi; " \
-		"${get_cmd} ${uimage}; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
-			"if ${get_cmd} ${fdt_addr} ${fdt_file}; then " \
-				"bootm ${loadaddr} - ${fdt_addr}; " \
-			"else " \
-				"if test ${boot_fdt} = try; then " \
-					"bootm; " \
-				"else " \
-					"echo WARN: Cannot load the DT; " \
-				"fi; " \
-			"fi; " \
-		"else " \
-			"bootm; " \
-		"fi;\0"
-
 #define CONFIG_BOOTCOMMAND \
-	   "mmc dev ${mmcdev}; if mmc rescan; then " \
-		   "if run loadbootscript; then " \
-			   "run bootscript; " \
-		   "else " \
-			   "if run loaduimage; then " \
-				   "run mmcboot; " \
-			   "else run netboot; " \
-			   "fi; " \
-		   "fi; " \
-	   "else run netboot; fi"
+	"mmc dev ${mmcdev};" \
+	"if mmc rescan; then " \
+	"if run loadbootenv; then " \
+		"echo Loaded environment from ${bootenv};" \
+		"run importbootenv;" \
+	"fi;" \
+	"if test -n $uenvcmd; then " \
+		"echo Running uenvcmd ...;" \
+		"run uenvcmd;" \
+	"fi;" \
+	"if run loadramdisk; then " \
+		"setenv rootdevice ${ramdisk_dev}; " \
+		"setenv bootsys \'bootm ${loadaddr} ${initrdaddr}\'; " \
+	"fi;" \
+	"if run loaduimage; then " \
+		"run setbootargs; " \
+		"run bootsys ; " \
+	"fi;" \
+	"fi;"
+
+#define CONFIG_EXTRA_ENV_SETTINGS \
+	"bootargs_base=console=ttymxc0,115200\0" \
+	"setbootargs=run setbase; run setvideo; run setopts; run setplatform\0" \
+	"setbase=setenv bootargs ${bootargs_base} ${rootdevice}\0" \
+	"setvideo=setenv bootargs ${bootargs} ${video_mode}\0" \
+	"setplatform=if test -n $expansion; then setenv bootargs " \
+		"$bootargs expansion=$expansion;fi;if test -n $baseboard;" \
+		" then setenv bootargs $bootargs baseboard=$baseboard;fi\0" \
+	"setopts=setenv bootargs ${bootargs} ${optargs}\0" \
+	"setvideo=setenv bootargs ${bootargs} ${video_mode}\0" \
+	"bootsys=bootm ${loadaddr}\0 " \
+	"initrdaddr=0x13000000\0" \
+	"rootdevice=root=/dev/mmcblk0p2 rootwait ro rootfstype=ext4\0" \
+	"mmcdev=0\0" \
+	"bootenv=boot/uEnv.txt\0" \
+	"bootcmd="CONFIG_BOOTCOMMAND"\0" \
+	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
+	"importbootenv=echo Importing environment...; " \
+		"env import -t $loadaddr $filesize\0" \
+	"loaduimage=fatload mmc ${mmcdev} ${loadaddr} boot/uImage\0" \
+	"loaduimage_raw=mmc read ${loadaddr} 0x800 0x4000\0 "	\
+	"loadramdisk=fatload mmc ${mmcdev} ${initrdaddr} boot/uramdisk.img\0" \
+	"splashimage=0x10800000\0"				\
+	"splashimage_mmc_init_block=0x410\0"			\
+	"splashimage_mmc_blkcnt=0x3F0\0"			\
+	"splashimage_file_name=boot/out.bmp.gz\0"		\
+        "splashpos=m,m\0"
 
 /* Miscellaneous configurable options */
 #define CONFIG_SYS_LONGHELP
 #define CONFIG_SYS_HUSH_PARSER
 #define CONFIG_SYS_PROMPT	       "DLRC#"
 #define CONFIG_AUTO_COMPLETE
-#define CONFIG_SYS_CBSIZE		256
+#define CONFIG_SYS_CBSIZE		512
 
 /* Print Buffer Size */
 #define CONFIG_SYS_PBSIZE (CONFIG_SYS_CBSIZE + sizeof(CONFIG_SYS_PROMPT) + 16)
-#define CONFIG_SYS_MAXARGS	       16
+#define CONFIG_SYS_MAXARGS	       32
 #define CONFIG_SYS_BARGSIZE CONFIG_SYS_CBSIZE
 
 #define CONFIG_SYS_LOAD_ADDR		CONFIG_LOADADDR
