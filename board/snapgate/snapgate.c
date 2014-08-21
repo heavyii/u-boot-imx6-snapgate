@@ -29,12 +29,6 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#define MX6QDL_SET_PAD(p, q) \
-        if (is_cpu_type(MXC_CPU_MX6Q)) \
-                imx_iomux_v3_setup_pad(MX6Q_##p | q);\
-        else \
-                imx_iomux_v3_setup_pad(MX6DL_##p | q)
-
 #define UART_PAD_CTRL  (PAD_CTL_PUS_100K_UP |			\
 	PAD_CTL_SPEED_MED | PAD_CTL_DSE_40ohm |			\
 	PAD_CTL_SRE_FAST  | PAD_CTL_HYS)
@@ -50,10 +44,10 @@ DECLARE_GLOBAL_DATA_PTR;
 	PAD_CTL_PUS_100K_UP | PAD_CTL_SPEED_MED   |             \
 	PAD_CTL_DSE_40ohm   | PAD_CTL_HYS)
 
-#define USDHC1_CD_GPIO		IMX_GPIO_NR(1, 2)
-#define USDHC3_CD_GPIO		IMX_GPIO_NR(3, 9)
-
+#define USDHC3_CD_GPIO		IMX_GPIO_NR(3, 16)
+#define EMMC_RESET_GPIO		IMX_GPIO_NR(3, 23)
 #define LED_GPIO		IMX_GPIO_NR(7, 13)
+#define LAN8720_RESET_GPIO IMX_GPIO_NR(6, 15)
 
 int dram_init(void)
 {
@@ -84,22 +78,9 @@ int dram_init(void)
 	return 0;
 }
 
-#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
-
 static iomux_v3_cfg_t const uart1_pads[] = {
-	MX6_PAD_CSI0_DAT10__UART1_TXD | MUX_PAD_CTRL(UART_PAD_CTRL),
-	MX6_PAD_CSI0_DAT11__UART1_RXD | MUX_PAD_CTRL(UART_PAD_CTRL),
-};
-
-iomux_v3_cfg_t const usdhc1_pads[] = {
-	MX6_PAD_SD1_CLK__USDHC1_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD1_CMD__USDHC1_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD1_DAT0__USDHC1_DAT0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD1_DAT1__USDHC1_DAT1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD1_DAT2__USDHC1_DAT2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	MX6_PAD_SD1_DAT3__USDHC1_DAT3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
-	/* Carrier MicroSD Card Detect */
-	MX6_PAD_GPIO_2__GPIO_1_2      | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_SD3_DAT7__UART1_TXD | MUX_PAD_CTRL(UART_PAD_CTRL),
+	MX6_PAD_SD3_DAT6__UART1_RXD | MUX_PAD_CTRL(UART_PAD_CTRL),
 };
 
 static iomux_v3_cfg_t const usdhc3_pads[] = {
@@ -110,7 +91,22 @@ static iomux_v3_cfg_t const usdhc3_pads[] = {
 	MX6_PAD_SD3_DAT2__USDHC3_DAT2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	MX6_PAD_SD3_DAT3__USDHC3_DAT3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
 	/* SOM MicroSD Card Detect */
-	MX6_PAD_EIM_DA9__GPIO_3_9     | MUX_PAD_CTRL(NO_PAD_CTRL),
+	MX6_PAD_EIM_D16__GPIO_3_16     | MUX_PAD_CTRL(NO_PAD_CTRL),
+};
+
+static iomux_v3_cfg_t const usdhc4_pads[] = {
+	MX6_PAD_SD4_CLK__USDHC4_CLK   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_CMD__USDHC4_CMD   | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT0__USDHC4_DAT0 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT1__USDHC4_DAT1 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT2__USDHC4_DAT2 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT3__USDHC4_DAT3 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT4__USDHC4_DAT4 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT5__USDHC4_DAT5 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT6__USDHC4_DAT6 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	MX6_PAD_SD4_DAT7__USDHC4_DAT7 | MUX_PAD_CTRL(USDHC_PAD_CTRL),
+	/* EMMC reset */
+	MX6_PAD_EIM_D23__GPIO_3_23     | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
 
 static iomux_v3_cfg_t const fec_pads[] = {
@@ -124,67 +120,30 @@ MUX_PAD_CTRL(ENET_PAD_CTRL),
     MX6_PAD_ENET_RXD0__ENET_RDATA_0        | MUX_PAD_CTRL(ENET_PAD_CTRL),
     MX6_PAD_ENET_RXD1__ENET_RDATA_1        | MUX_PAD_CTRL(ENET_PAD_CTRL),
     MX6_PAD_ENET_TXD0__ENET_TDATA_0        | MUX_PAD_CTRL(ENET_PAD_CTRL),
-    MX6_PAD_ENET_TXD1__ENET_TDATA_1        | MUX_PAD_CTRL(ENET_PAD_CTRL)
-};
+    MX6_PAD_ENET_TXD1__ENET_TDATA_1        | MUX_PAD_CTRL(ENET_PAD_CTRL),
 
-static iomux_v3_cfg_t const ecspi2_pads[] = {
-	MX6_PAD_EIM_CS0__ECSPI2_SCLK   | MUX_PAD_CTRL(SPI_PAD_CTRL),
-	MX6_PAD_EIM_CS1__ECSPI2_MOSI | MUX_PAD_CTRL(SPI_PAD_CTRL),
-	MX6_PAD_EIM_OE__ECSPI2_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL),
-	MX6_PAD_EIM_D25__GPIO_3_25 | MUX_PAD_CTRL(NO_PAD_CTRL),
+    /* RESET PIN */
+    MX6_PAD_NANDF_CS2__GPIO_6_15     | MUX_PAD_CTRL(NO_PAD_CTRL),
 };
-#endif
 
 static void setup_iomux_uart(void)
 {
-#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
 	imx_iomux_v3_setup_multiple_pads(uart1_pads, ARRAY_SIZE(uart1_pads));
-#endif
-#if defined(CONFIG_MX6QDL)
-	MX6QDL_SET_PAD(PAD_CSI0_DAT10__UART1_TXD, MUX_PAD_CTRL(UART_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_CSI0_DAT11__UART1_RXD, MUX_PAD_CTRL(UART_PAD_CTRL));
-#endif
 }
 
-static void setup_iomux_usdhc1(void)
+static void setup_iomux_usdhc4(void)
 {
-#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
-	imx_iomux_v3_setup_multiple_pads(usdhc1_pads, ARRAY_SIZE(usdhc1_pads));
-#endif
-#if defined(CONFIG_MX6QDL)
-	MX6QDL_SET_PAD(PAD_SD1_CLK__USDHC1_CLK   , MUX_PAD_CTRL(USDHC_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_SD1_CMD__USDHC1_CMD   , MUX_PAD_CTRL(USDHC_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_SD1_DAT0__USDHC1_DAT0 , MUX_PAD_CTRL(USDHC_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_SD1_DAT1__USDHC1_DAT1 , MUX_PAD_CTRL(USDHC_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_SD1_DAT2__USDHC1_DAT2 , MUX_PAD_CTRL(USDHC_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_SD1_DAT3__USDHC1_DAT3 , MUX_PAD_CTRL(USDHC_PAD_CTRL));
-	/* Carrier MicroSD Card Detect */
-	MX6QDL_SET_PAD(PAD_GPIO_2__GPIO_1_2      , MUX_PAD_CTRL(NO_PAD_CTRL));
-
-#endif
+	imx_iomux_v3_setup_multiple_pads(usdhc4_pads, ARRAY_SIZE(usdhc4_pads));
 }
 
 static void setup_iomux_usdhc3(void)
 {
-#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
 	imx_iomux_v3_setup_multiple_pads(usdhc3_pads, ARRAY_SIZE(usdhc3_pads));
-#endif
-#if defined(CONFIG_MX6QDL)
-	MX6QDL_SET_PAD(PAD_SD3_CLK__USDHC3_CLK   , MUX_PAD_CTRL(USDHC_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_SD3_CMD__USDHC3_CMD   , MUX_PAD_CTRL(USDHC_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_SD3_DAT0__USDHC3_DAT0 , MUX_PAD_CTRL(USDHC_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_SD3_DAT1__USDHC3_DAT1 , MUX_PAD_CTRL(USDHC_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_SD3_DAT2__USDHC3_DAT2 , MUX_PAD_CTRL(USDHC_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_SD3_DAT3__USDHC3_DAT3 , MUX_PAD_CTRL(USDHC_PAD_CTRL));
-	/* SOM MicroSD Card Detect */
-	MX6QDL_SET_PAD(PAD_EIM_DA9__GPIO_3_9     , MUX_PAD_CTRL(NO_PAD_CTRL));
-
-#endif
 }
 
 static struct fsl_esdhc_cfg usdhc_cfg[2] = {
 	{USDHC3_BASE_ADDR},
-	{USDHC1_BASE_ADDR},
+	{USDHC4_BASE_ADDR},
 };
 
 int board_mmc_getcd(struct mmc *mmc)
@@ -193,11 +152,11 @@ int board_mmc_getcd(struct mmc *mmc)
 	int ret = 0;
 
 	switch (cfg->esdhc_base) {
-	case USDHC1_BASE_ADDR:
-		ret = !gpio_get_value(USDHC1_CD_GPIO);
-		break;
 	case USDHC3_BASE_ADDR:
 		ret = !gpio_get_value(USDHC3_CD_GPIO);
+		break;
+	case USDHC4_BASE_ADDR:
+		ret = 1; /* eMMC/uSDHC4 is always present */
 		break;
 	}
 
@@ -212,23 +171,29 @@ int board_mmc_init(bd_t *bis)
 	/*
 	 * Following map is done:
 	 * (U-boot device node)    (Physical Port)
-	 * mmc0                    SOM MicroSD
-	 * mmc1                    Carrier board MicroSD
+	 * mmc0                    SD4 emmc
+	 * mmc1                    SD3 micro SD
 	 */
 	for (index = 0; index < CONFIG_SYS_FSL_USDHC_NUM; ++index) {
 		switch (index) {
+		case 1:
+			setup_iomux_usdhc4();
+			usdhc_cfg[index].sdhc_clk = mxc_get_clock(MXC_ESDHC4_CLK);
+			usdhc_cfg[index].max_bus_width = 8;
+			{
+				/* Reset AR8031 PHY */
+				gpio_direction_output(EMMC_RESET_GPIO, 0);
+				udelay(500);
+				gpio_set_value(EMMC_RESET_GPIO, 1);
+			}
+			break;
 		case 0:
 			setup_iomux_usdhc3();
-			usdhc_cfg[0].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
-			usdhc_cfg[0].max_bus_width = 4;
+			usdhc_cfg[index].sdhc_clk = mxc_get_clock(MXC_ESDHC3_CLK);
+			usdhc_cfg[index].max_bus_width = 4;
 			gpio_direction_input(USDHC3_CD_GPIO);
 			break;
-		case 1:
-			setup_iomux_usdhc1();
-			usdhc_cfg[1].sdhc_clk = mxc_get_clock(MXC_ESDHC_CLK);
-			usdhc_cfg[1].max_bus_width = 4;
-			gpio_direction_input(USDHC1_CD_GPIO);
-			break;
+
 		default:
 			printf("Warning: you configured more USDHC controllers"
 			       "(%d) then supported by the board (%d)\n",
@@ -348,22 +313,7 @@ int splash_screen_prepare(void)
 
 static void setup_iomux_fec(void)
 {
-#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
 	imx_iomux_v3_setup_multiple_pads(fec_pads, ARRAY_SIZE(fec_pads));
-#endif
-#if defined(CONFIG_MX6QDL)
-	MX6QDL_SET_PAD(PAD_ENET_MDIO__ENET_MDIO, MUX_PAD_CTRL(ENET_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_ENET_MDC__ENET_MDC, 	MUX_PAD_CTRL(ENET_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_ENET_CRS_DV__ENET_RX_EN , MUX_PAD_CTRL(ENET_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_ENET_RX_ER__ENET_RX_ER , MUX_PAD_CTRL(ENET_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_ENET_RXD0__ENET_RDATA_0   , MUX_PAD_CTRL(ENET_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_ENET_RXD1__ENET_RDATA_1   , MUX_PAD_CTRL(ENET_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_ENET_TXD0__ENET_TDATA_0 , MUX_PAD_CTRL(ENET_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_ENET_TXD1__ENET_TDATA_1 , MUX_PAD_CTRL(ENET_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_ENET_TX_EN__ENET_TX_EN , MUX_PAD_CTRL(ENET_PAD_CTRL));
-	#define MX6Q_PAD_GPIO_16__ENET_ANATOP_ETHERNET_REF_OUT MX6Q_PAD_GPIO_16__ENET_ETHERNET_REF_OUT
-	MX6QDL_SET_PAD(PAD_GPIO_16__ENET_ANATOP_ETHERNET_REF_OUT , MUX_PAD_CTRL(ENET_PAD_CTRL));
-#endif
 }
 
 static int board_enable_fec_anatop_clock(void)
@@ -400,6 +350,11 @@ int board_eth_init(bd_t *bis)
 	int ret;
 
 	setup_iomux_fec();
+
+	/* Reset LAN8720 PHY */
+	gpio_direction_output(LAN8720_RESET_GPIO, 0);
+	udelay(500);
+	gpio_set_value(LAN8720_RESET_GPIO, 1);
 
 	ret = cpu_eth_init(bis);
 	if (ret) {
@@ -450,18 +405,17 @@ int overwrite_console(void)
 
 #ifdef CONFIG_MXC_SPI
 
+static iomux_v3_cfg_t const ecspi1_pads[] = {
+	MX6_PAD_KEY_COL0__ECSPI1_SCLK   | MUX_PAD_CTRL(SPI_PAD_CTRL),
+	MX6_PAD_KEY_ROW0__ECSPI1_MOSI | MUX_PAD_CTRL(SPI_PAD_CTRL),
+	MX6_PAD_KEY_COL1__ECSPI1_MISO | MUX_PAD_CTRL(SPI_PAD_CTRL),
+	/* SPI1 SS0 */
+	MX6_PAD_KEY_ROW1__GPIO_4_9 | MUX_PAD_CTRL(SPI_PAD_CTRL),
+};
+
 static void setup_iomux_spi(void)
 {
-#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
-	imx_iomux_v3_setup_multiple_pads(ecspi2_pads, ARRAY_SIZE(ecspi2_pads));
-#endif
-#if defined(CONFIG_MX6QDL)
-	MX6QDL_SET_PAD(PAD_EIM_CS0__ECSPI2_SCLK, MUX_PAD_CTRL(SPI_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_EIM_CS1__ECSPI2_MOSI, MUX_PAD_CTRL(SPI_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_EIM_OE__ECSPI2_MISO, MUX_PAD_CTRL(SPI_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_EIM_D25__ECSPI2_SS3, MUX_PAD_CTRL(SPI_PAD_CTRL));
-	MX6QDL_SET_PAD(PAD_EIM_D25__GPIO_3_25, MUX_PAD_CTRL(SPI_PAD_CTRL));
-#endif
+	imx_iomux_v3_setup_multiple_pads(ecspi1_pads, ARRAY_SIZE(ecspi1_pads));
 }
 
 static void setup_spi(void)
@@ -473,12 +427,7 @@ static void setup_spi(void)
 static void setup_led(void)
 {
 	printf("light led\n");
-#if defined(CONFIG_MX6Q) || defined(CONFIG_MX6DL)
 	imx_iomux_v3_setup_pad(MX6_PAD_GPIO_18__GPIO_7_13 | MUX_PAD_CTRL(NO_PAD_CTRL));
-#endif
-#if defined(CONFIG_MX6QDL)
-	MX6QDL_SET_PAD(GPIO_18__GPIO_7_13);
-#endif
 	gpio_direction_output(LED_GPIO, 1);
 	gpio_direction_output(LED_GPIO, 0);
 }
@@ -486,8 +435,9 @@ static void setup_led(void)
 #ifdef CONFIG_CMD_BMODE
 static const struct boot_mode board_boot_modes[] = {
 	/* 4 bit bus width */
-	{"mmc0",	  MAKE_CFGVAL(0x40, 0x30, 0x00, 0x00)},
-	{"mmc1",	  MAKE_CFGVAL(0x40, 0x20, 0x00, 0x00)},
+	{"sd3",	 MAKE_CFGVAL(0x40, 0x30, 0x00, 0x00)},
+	/* 8 bit bus width */
+	{"emmc", MAKE_CFGVAL(0x40, 0x38, 0x00, 0x00)},
 	{NULL,	 0},
 };
 #endif
