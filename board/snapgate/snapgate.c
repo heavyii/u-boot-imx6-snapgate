@@ -48,7 +48,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define EMMC_RESET_GPIO		IMX_GPIO_NR(3, 23)
 #define LED_GPIO		IMX_GPIO_NR(7, 13)
 #define LAN8720_RESET_GPIO IMX_GPIO_NR(6, 15)
-
+#define WDT_GPIO	IMX_GPIO_NR(4, 10)
 int dram_init(void)
 {
 #if defined(CONFIG_DDR_MB)
@@ -432,6 +432,16 @@ static void setup_led(void)
 	gpio_direction_output(LED_GPIO, 0);
 }
 
+static void clear_wdt(void)
+{
+	printf("clear wdt\n");
+	imx_iomux_v3_setup_pad(MX6_PAD_KEY_COL2__GPIO_4_10 | MUX_PAD_CTRL(NO_PAD_CTRL));
+	gpio_direction_output(WDT_GPIO, 1);
+	gpio_direction_output(WDT_GPIO, 0);
+	udelay(10000);
+	gpio_direction_output(WDT_GPIO, 1);
+}
+
 #ifdef CONFIG_CMD_BMODE
 static const struct boot_mode board_boot_modes[] = {
 	/* 4 bit bus width */
@@ -456,6 +466,7 @@ int board_init(void)
 	/* address of boot parameters */
 	gd->bd->bi_boot_params = PHYS_SDRAM + 0x100;
 	setup_led();
+	clear_wdt();
 #ifdef CONFIG_MXC_SPI
 	setup_spi();
 #endif
