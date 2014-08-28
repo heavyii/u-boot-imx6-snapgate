@@ -421,6 +421,7 @@ static void setup_iomux_spi(void)
 static void setup_spi(void)
 {
 	setup_iomux_spi();
+	gpio_direction_output(IMX_GPIO_NR(4, 9), 0);
 }
 #endif
 
