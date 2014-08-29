@@ -169,18 +169,17 @@
 	"bootsys_fdt=echo boot fdt...; \
 		bootm ${loadaddr} - ${fdt_addr} \0 " \
 	"initrdaddr=0x13000000\0" \
-	"rootdevice=root=/dev/mmcblk0p2 rootwait rw rootfstype=ext3\0" \
+	"rootdevice=root=/dev/mmcblk0p1 rootwait rw rootfstype=ext3\0" \
 	"mmcdev=0\0" \
-	"bootenv=boot/uEnv.txt\0" \
 	"fdt_file=imx6dl-snapgate.dtb\0" \
 	"bootcmd="CONFIG_BOOTCOMMAND"\0" \
-	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
+	"loadbootenv=ext2load mmc ${mmcdev} ${loadaddr} boot/uEnv.txt\0" \
 	"importbootenv=echo Importing environment...; " \
 		"env import -t $loadaddr $filesize\0" \
-	"loadfdt=fatload mmc ${mmcdev} ${fdt_addr} boot/${fdt_file}\0" \
-	"loaduimage=fatload mmc ${mmcdev} ${loadaddr} boot/uImage\0" \
+	"loadfdt=ext2load mmc ${mmcdev} ${fdt_addr} boot/${fdt_file}\0" \
+	"loaduimage=ext2load mmc ${mmcdev} ${loadaddr} boot/uImage\0" \
 	"loaduimage_raw=mmc read ${loadaddr} 0x800 0x4000\0 "	\
-	"loadramdisk=fatload mmc ${mmcdev} ${initrdaddr} boot/uramdisk.img\0" \
+	"loadramdisk=ext2load mmc ${mmcdev} ${initrdaddr} boot/uramdisk.img\0" \
 	"splashimage=0x10800000\0"				\
 	"splashimage_mmc_init_block=0x410\0"			\
 	"splashimage_mmc_blkcnt=0x3F0\0"			\
