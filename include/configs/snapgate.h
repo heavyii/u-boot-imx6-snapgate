@@ -131,6 +131,7 @@
 #endif
 
 #define CONFIG_BOOTCOMMAND \
+	"mmc dev 0; if mmc read $loadaddr 0 1; then echo SD inserted; setenv rootdevice \"root=/dev/mmcblk1p1 rootwait rw rootfstype=ext3\"; fi;" \
 	"mmc dev ${mmcdev};" \
 	"if mmc rescan; then " \
 	"if run loadbootenv; then " \
@@ -140,10 +141,6 @@
 	"if test -n $uenvcmd; then " \
 		"echo Running uenvcmd ...;" \
 		"run uenvcmd;" \
-	"fi;" \
-	"if run loadramdisk; then " \
-		"setenv rootdevice ${ramdisk_dev}; " \
-		"setenv bootsys \'bootm ${loadaddr} ${initrdaddr}\'; " \
 	"fi;" \
 	"if run loaduimage; then " \
 		"run setbootargs; " \
@@ -170,7 +167,7 @@
 		bootm ${loadaddr} - ${fdt_addr} \0 " \
 	"initrdaddr=0x13000000\0" \
 	"rootdevice=root=/dev/mmcblk0p1 rootwait rw rootfstype=ext3\0" \
-	"mmcdev=0\0" \
+	"mmcdev=1\0" \
 	"fdt_file=imx6dl-snapgate.dtb\0" \
 	"bootcmd="CONFIG_BOOTCOMMAND"\0" \
 	"loadbootenv=ext2load mmc ${mmcdev} ${loadaddr} boot/uEnv.txt\0" \
@@ -178,8 +175,6 @@
 		"env import -t $loadaddr $filesize\0" \
 	"loadfdt=ext2load mmc ${mmcdev} ${fdt_addr} boot/${fdt_file}\0" \
 	"loaduimage=ext2load mmc ${mmcdev} ${loadaddr} boot/uImage\0" \
-	"loaduimage_raw=mmc read ${loadaddr} 0x800 0x4000\0 "	\
-	"loadramdisk=ext2load mmc ${mmcdev} ${initrdaddr} boot/uramdisk.img\0" \
 	"splashimage=0x10800000\0"				\
 	"splashimage_mmc_init_block=0x410\0"			\
 	"splashimage_mmc_blkcnt=0x3F0\0"			\

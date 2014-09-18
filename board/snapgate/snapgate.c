@@ -182,8 +182,8 @@ int board_mmc_init(bd_t *bis)
 			usdhc_cfg[index].max_bus_width = 8;
 			{
 				/* Reset AR8031 PHY */
-				gpio_direction_output(EMMC_RESET_GPIO, 0);
-				udelay(500);
+				//gpio_direction_output(EMMC_RESET_GPIO, 0);
+				//udelay(500);
 				gpio_set_value(EMMC_RESET_GPIO, 1);
 			}
 			break;
@@ -448,7 +448,7 @@ static const struct boot_mode board_boot_modes[] = {
 	/* 4 bit bus width */
 	{"sd3",	 MAKE_CFGVAL(0x40, 0x30, 0x00, 0x00)},
 	/* 8 bit bus width */
-	{"emmc", MAKE_CFGVAL(0x40, 0x38, 0x00, 0x00)},
+	{"emmc", MAKE_CFGVAL(0x60, 0x58, 0x00, 0x00)},
 	{NULL,	 0},
 };
 #endif
