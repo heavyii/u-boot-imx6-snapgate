@@ -131,42 +131,60 @@
 #endif
 
 #define CONFIG_BOOTCOMMAND \
-	"mmc dev 0; if mmc read $loadaddr 0 1; then echo SD inserted; setenv rootdevice \"root=/dev/mmcblk1p1 rootwait rw rootfstype=ext3\"; fi;" \
-	"mmc dev ${mmcdev};" \
 	"if mmc rescan; then " \
-	"if run loadbootenv; then " \
-		"echo Loaded environment from ${bootenv};" \
-		"run importbootenv;" \
+		"setenv mmcdev 0;" \
+		"if run loadbootenv; then " \
+			"echo load SD env;" \
+			"run importbootenv;" \
+			"if test -n $uenvcmd; then " \
+				"echo Running uenvcmd ...;" \
+				"run uenvcmd;" \
+			"fi;" \
+		"fi;" \
 	"fi;" \
-	"if test -n $uenvcmd; then " \
-		"echo Running uenvcmd ...;" \
-		"run uenvcmd;" \
+	"mmc dev 1;" \
+	"setenv mmcdev 1;" \
+	"run importfactoryenv;" \
+	"if run loadbootenv; then " \
+		"echo load eMMC env;" \
+		"run importbootenv;" \
+		"if test -n $uenvcmd; then " \
+			"echo Running uenvcmd ...;" \
+			"run uenvcmd;" \
+		"fi;" \
 	"fi;" \
 	"if run loaduimage; then " \
+		"echo boot from eMMC;" \
 		"run setbootargs; " \
 		"if run loadfdt; then " \
 			"run bootsys_fdt ; " \
 		"fi; " \
 		"run bootsys ; " \
 	"fi;" \
+	"if run loaduimage_raw; then " \
+		"echo boot from eMMC raw;" \
+		"run setbootargs; " \
+		"if run loadfdt_raw; then " \
+			"run bootsys_fdt ; " \
+		"fi; " \
+		"run bootsys ; " \
 	"fi;"
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"bootargs_base=console=ttymxc0,115200\0" \
-	"setbootargs=run setbase; run setvideo; run setopts; run setplatform\0" \
+	"setbootargs=run setbase; run setvideo; run setopts\0" \
 	"setbase=setenv bootargs ${bootargs_base} ${rootdevice}\0" \
 	"setvideo=setenv bootargs ${bootargs} ${video_mode}\0" \
-	"setplatform=if test -n $expansion; then setenv bootargs " \
-		"$bootargs expansion=$expansion;fi;if test -n $baseboard;" \
-		" then setenv bootargs $bootargs baseboard=$baseboard;fi\0" \
-	"setopts=setenv bootargs ${bootargs} ${optargs}\0" \
-	"setvideo=setenv bootargs ${bootargs} ${video_mode}\0" \
+	"setopts=setenv bootargs ${bootargs} psplash=false fec.macaddr=${ethaddr}\0" \
+	"ethact=FEC\0" \
+	"ethprime=FEC\0" \
+	"ethaddr=02:24:08:32:68:38\0" \
 	"fdt_addr=0x11000000\0" \
 	"bootsys=bootm ${loadaddr}\0 " \
 	"bootsys_fdt=echo boot fdt...; \
 		bootm ${loadaddr} - ${fdt_addr} \0 " \
 	"initrdaddr=0x13000000\0" \
-	"rootdevice=root=/dev/mmcblk0p1 rootwait rw rootfstype=ext3\0" \
+	"rootdevice=root=/dev/mmcblk1p2 rootwait rw rootfstype=romfs\0" \
 	"mmcdev=1\0" \
 	"fdt_file=imx6dl-snapgate.dtb\0" \
 	"bootcmd="CONFIG_BOOTCOMMAND"\0" \
@@ -175,6 +193,10 @@
 		"env import -t $loadaddr $filesize\0" \
 	"loadfdt=ext2load mmc ${mmcdev} ${fdt_addr} boot/${fdt_file}\0" \
 	"loaduimage=ext2load mmc ${mmcdev} ${loadaddr} boot/uImage\0" \
+	"loadfdt_raw=mmc read ${fdt_addr} 0x2800 0x800\0" \
+	"loaduimage_raw=mmc read ${loadaddr} 0x3000 0x4000\0" \
+	"importfactoryenv=mmc read ${loadaddr} 0x2000 0x800;" \
+		"env import -t $loadaddr $filesize\0" \
 	"splashimage=0x10800000\0"				\
 	"splashimage_mmc_init_block=0x410\0"			\
 	"splashimage_mmc_blkcnt=0x3F0\0"			\
