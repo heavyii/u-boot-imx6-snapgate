@@ -132,14 +132,9 @@
 
 #define CONFIG_BOOTCOMMAND \
 	"if mmc rescan; then " \
-		"setenv mmcdev 0;" \
-		"if run loadbootenv; then " \
-			"echo load SD env;" \
-			"run importbootenv;" \
-			"if test -n $uenvcmd; then " \
-				"echo Running uenvcmd ...;" \
-				"run uenvcmd;" \
-			"fi;" \
+		"if fatload mmc 0 ${loadaddr} boot.img; then " \
+			"echo boot from SD card;" \
+			"source $scriptaddr;" \
 		"fi;" \
 	"fi;" \
 	"mmc dev 1;" \
@@ -175,15 +170,17 @@
 	"setbootargs=run setbase; run setvideo; run setopts\0" \
 	"setbase=setenv bootargs ${bootargs_base} ${rootdevice}\0" \
 	"setvideo=setenv bootargs ${bootargs} ${video_mode}\0" \
-	"setopts=setenv bootargs ${bootargs} psplash=false fec.macaddr=${ethaddr}\0" \
+	"setopts=setenv bootargs ${bootargs} psplash=false fec.macaddr=${macaddr}\0" \
 	"ethact=FEC\0" \
 	"ethprime=FEC\0" \
 	"ethaddr=02:24:08:32:68:38\0" \
-	"fdt_addr=0x11000000\0" \
+	"macaddr=0x02,0x24,0x08,0x32,0x68,0x38\0" \
+	"scriptaddr=0x12100000\0" \
+	"fdtaddr=0x12000000\0" \
 	"bootsys=bootm ${loadaddr}\0 " \
 	"bootsys_fdt=echo boot fdt...; \
-		bootm ${loadaddr} - ${fdt_addr} \0 " \
-	"initrdaddr=0x13000000\0" \
+		bootm ${loadaddr} - ${fdtaddr} \0 " \
+	"initrdaddr=0x12200000\0" \
 	"rootdevice=root=/dev/mmcblk1p2 rootwait rw rootfstype=romfs\0" \
 	"mmcdev=1\0" \
 	"fdt_file=imx6dl-snapgate.dtb\0" \
@@ -191,9 +188,9 @@
 	"loadbootenv=ext2load mmc ${mmcdev} ${loadaddr} boot/uEnv.txt\0" \
 	"importbootenv=echo Importing environment...; " \
 		"env import -t $loadaddr $filesize\0" \
-	"loadfdt=ext2load mmc ${mmcdev} ${fdt_addr} boot/${fdt_file}\0" \
+	"loadfdt=ext2load mmc ${mmcdev} ${fdtaddr} boot/${fdt_file}\0" \
 	"loaduimage=ext2load mmc ${mmcdev} ${loadaddr} boot/uImage\0" \
-	"loadfdt_raw=mmc read ${fdt_addr} 0x2800 0x800\0" \
+	"loadfdt_raw=mmc read ${fdtaddr} 0x2800 0x800\0" \
 	"loaduimage_raw=mmc read ${loadaddr} 0x3000 0x4000\0" \
 	"importfactoryenv=mmc read ${loadaddr} 0x2000 0x800;" \
 		"env import -t $loadaddr $filesize\0" \
