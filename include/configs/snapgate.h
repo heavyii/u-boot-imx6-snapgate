@@ -123,56 +123,77 @@
 #define CONFIG_IMX_HDMI
 
 #if defined(CONFIG_MX6DL) || defined(CONFIG_MX6S)
-#define CONFIG_DEFAULT_FDT_FILE		"imx6dl-SNAPGATE.dtb"
+#define CONFIG_DEFAULT_FDT_FILE		"imx6dl-snapgate.dtb"
 #elif defined(CONFIG_MX6Q)
-#define CONFIG_DEFAULT_FDT_FILE		"imx6q-SNAPGATE.dtb"
+#define CONFIG_DEFAULT_FDT_FILE		"imx6q-snapgate.dtb"
 #else
-#define CONFIG_DEFAULT_FDT_FILE		"imx6q-SNAPGATE.dtb"
+#define CONFIG_DEFAULT_FDT_FILE		"imx6q-snapgate.dtb"
 #endif
 
 #define CONFIG_BOOTCOMMAND \
-	"mmc dev ${mmcdev};" \
 	"if mmc rescan; then " \
+		"if fatload mmc 0 ${loadaddr} boot.img; then " \
+			"echo boot from SD card;" \
+			"source $scriptaddr;" \
+		"fi;" \
+	"fi;" \
+	"mmc dev 1;" \
+	"setenv mmcdev 1;" \
+	"run importfactoryenv;" \
 	"if run loadbootenv; then " \
-		"echo Loaded environment from ${bootenv};" \
+		"echo load eMMC env;" \
 		"run importbootenv;" \
-	"fi;" \
-	"if test -n $uenvcmd; then " \
-		"echo Running uenvcmd ...;" \
-		"run uenvcmd;" \
-	"fi;" \
-	"if run loadramdisk; then " \
-		"setenv rootdevice ${ramdisk_dev}; " \
-		"setenv bootsys \'bootm ${loadaddr} ${initrdaddr}\'; " \
+		"if test -n $uenvcmd; then " \
+			"echo Running uenvcmd ...;" \
+			"run uenvcmd;" \
+		"fi;" \
 	"fi;" \
 	"if run loaduimage; then " \
+		"echo boot from eMMC;" \
 		"run setbootargs; " \
+		"if run loadfdt; then " \
+			"run bootsys_fdt ; " \
+		"fi; " \
 		"run bootsys ; " \
 	"fi;" \
+	"if run loaduimage_raw; then " \
+		"echo boot from eMMC raw;" \
+		"run setbootargs; " \
+		"if run loadfdt_raw; then " \
+			"run bootsys_fdt ; " \
+		"fi; " \
+		"run bootsys ; " \
 	"fi;"
 
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	"bootargs_base=console=ttymxc0,115200\0" \
-	"setbootargs=run setbase; run setvideo; run setopts; run setplatform\0" \
+	"setbootargs=run setbase; run setvideo; run setopts\0" \
 	"setbase=setenv bootargs ${bootargs_base} ${rootdevice}\0" \
 	"setvideo=setenv bootargs ${bootargs} ${video_mode}\0" \
-	"setplatform=if test -n $expansion; then setenv bootargs " \
-		"$bootargs expansion=$expansion;fi;if test -n $baseboard;" \
-		" then setenv bootargs $bootargs baseboard=$baseboard;fi\0" \
-	"setopts=setenv bootargs ${bootargs} ${optargs}\0" \
-	"setvideo=setenv bootargs ${bootargs} ${video_mode}\0" \
+	"setopts=setenv bootargs ${bootargs} psplash=false fec.macaddr=${macaddr}\0" \
+	"ethact=FEC\0" \
+	"ethprime=FEC\0" \
+	"ethaddr=02:24:08:32:68:38\0" \
+	"macaddr=0x02,0x24,0x08,0x32,0x68,0x38\0" \
+	"scriptaddr=0x12100000\0" \
+	"fdtaddr=0x12000000\0" \
 	"bootsys=bootm ${loadaddr}\0 " \
-	"initrdaddr=0x13000000\0" \
-	"rootdevice=root=/dev/mmcblk0p2 rootwait ro rootfstype=ext4\0" \
-	"mmcdev=0\0" \
-	"bootenv=boot/uEnv.txt\0" \
+	"bootsys_fdt=echo boot fdt...; \
+		bootm ${loadaddr} - ${fdtaddr} \0 " \
+	"initrdaddr=0x12200000\0" \
+	"rootdevice=root=/dev/mmcblk1p2 rootwait rw rootfstype=romfs\0" \
+	"mmcdev=1\0" \
+	"fdt_file=imx6dl-snapgate.dtb\0" \
 	"bootcmd="CONFIG_BOOTCOMMAND"\0" \
-	"loadbootenv=fatload mmc ${mmcdev} ${loadaddr} ${bootenv}\0" \
+	"loadbootenv=ext2load mmc ${mmcdev} ${loadaddr} boot/uEnv.txt\0" \
 	"importbootenv=echo Importing environment...; " \
 		"env import -t $loadaddr $filesize\0" \
-	"loaduimage=fatload mmc ${mmcdev} ${loadaddr} boot/uImage\0" \
-	"loaduimage_raw=mmc read ${loadaddr} 0x800 0x4000\0 "	\
-	"loadramdisk=fatload mmc ${mmcdev} ${initrdaddr} boot/uramdisk.img\0" \
+	"loadfdt=ext2load mmc ${mmcdev} ${fdtaddr} boot/${fdt_file}\0" \
+	"loaduimage=ext2load mmc ${mmcdev} ${loadaddr} boot/uImage\0" \
+	"loadfdt_raw=mmc read ${fdtaddr} 0x2800 0x800\0" \
+	"loaduimage_raw=mmc read ${loadaddr} 0x3000 0x4000\0" \
+	"importfactoryenv=mmc read ${loadaddr} 0x2000 0x800;" \
+		"env import -t $loadaddr $filesize\0" \
 	"splashimage=0x10800000\0"				\
 	"splashimage_mmc_init_block=0x410\0"			\
 	"splashimage_mmc_blkcnt=0x3F0\0"			\
@@ -219,15 +240,15 @@
 #define CONFIG_SPI_FLASH
 #define CONFIG_SPI_FLASH_STMICRO
 
-#define CONFIG_SF_DEFAULT_BUS  1
-#define CONFIG_SF_DEFAULT_CS   (IMX_GPIO_NR(3, 25)<<8)
+#define CONFIG_SF_DEFAULT_BUS  0
+#define CONFIG_SF_DEFAULT_CS   (IMX_GPIO_NR(4, 9)<<8)
 #define CONFIG_SF_DEFAULT_SPEED 20000000
 #define CONFIG_SF_DEFAULT_MODE (SPI_MODE_0)
 
-#define CONFIG_ENV_SPI_BUS		1
-#define CONFIG_ENV_SPI_CS		(IMX_GPIO_NR(3, 25)<<8)
+#define CONFIG_ENV_SPI_BUS		0
+#define CONFIG_ENV_SPI_CS		(IMX_GPIO_NR(4, 9)<<8)
 #define CONFIG_ENV_SPI_MAX_HZ	20000000
-#define CONFIG_ENV_SPI_MODE		SPI_MODE_0
+#define CONFIG_ENV_SPI_MODE		(SPI_MODE_0)
 #endif
 
 /* environment  */
