@@ -131,6 +131,21 @@
 #endif
 
 #define CONFIG_BOOTCOMMAND \
+	"gpio input 176;" \
+	"if test $? -eq 0; then " \
+		"if usb start; then " \
+			"if fatload usb 0:0 ${loadaddr} boot.img; then " \
+				"gpio set 101;" \
+				"echo boot from usb;" \
+				"source $scriptaddr;" \
+			"fi;" \
+			"if fatload usb 0:1 ${loadaddr} boot.img; then " \
+				"gpio set 101;" \
+				"echo boot from usb;" \
+				"source $scriptaddr;" \
+			"fi;" \
+		"fi;" \
+	"fi;" \
 	"if mmc rescan; then " \
 		"if fatload mmc 0 ${loadaddr} boot.img; then " \
 			"echo boot from SD card;" \
@@ -265,6 +280,17 @@
 #define CONFIG_CMD_CACHE
 #endif
 
+/* USB Configs */
+#define CONFIG_CMD_USB
+#define CONFIG_CMD_FAT
+#define CONFIG_USB_EHCI
+#define CONFIG_USB_EHCI_MX6
+#define CONFIG_USB_STORAGE
+#define CONFIG_MXC_USB_PORT 1
+#define CONFIG_MXC_USB_PORTSC (PORT_PTS_UTMI | PORT_PTS_PTW)
+#define CONFIG_MXC_USB_FLAGS 0
 
+/* gpio cmd */
+#define CONFIG_CMD_GPIO
 
 #endif			       /* __CONFIG_H * */
